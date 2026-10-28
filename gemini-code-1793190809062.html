@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Mini Minecraft - PC Desteği</title>
+<style>
+:root{--ui:rgba(0,0,0,.5);--fg:#fff;--sel:#ffd54a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ui:rgba(0,0,0,.6)}}
+:root[data-theme="dark"]{--ui:rgba(0,0,0,.6)}
+html,body{margin:0;height:100%;overflow:hidden;background:#000;touch-action:manipulation;user-select:none;-webkit-user-select:none;font-family:system-ui,sans-serif}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:crosshair}
+#hud{display:none}
+#look{position:fixed;inset:0;touch-action:none}
+#cross{position:fixed;left:50%;top:50%;width:22px;height:22px;transform:translate(-50%,-50%);pointer-events:none}
+#cross:before,#cross:after{content:"";position:absolute;background:#fff;mix-blend-mode:difference}
+#cross:before{left:10px;top:0;width:2px;height:22px}
+#cross:after{top:10px;left:0;height:2px;width:22px}
+#bar{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);left:50%;transform:translateX(-50%);display:flex;gap:6px;background:var(--ui);padding:6px;border-radius:10px;touch-action:pan-x;max-width:calc(100vw - 16px);overflow-x:auto;box-sizing:border-box}
+#bar::-webkit-scrollbar{display:none}
+.slot{flex:0 0 auto;position:relative;width:36px;height:36px;border:3px solid transparent;border-radius:6px;box-sizing:border-box;image-rendering:pixelated;cursor:pointer}
+.slot.on{border-color:var(--sel)}
+.slot i{position:absolute;right:2px;bottom:0;color:#fff;font:700 11px system-ui;font-style:normal;text-shadow:0 0 3px #000,0 0 3px #000}
+#info{position:fixed;left:10px;top:calc(env(safe-area-inset-top,0px) + 8px);color:#fff;font-size:12px;background:var(--ui);padding:6px 8px;border-radius:8px;line-height:1.5;pointer-events:none}
+#craftBtn{position:fixed;right:10px;top:calc(env(safe-area-inset-top,0px) + 56px);color:#fff;background:var(--ui);padding:10px 12px;border-radius:8px;font-size:13px;font-weight:600;touch-action:none;display:none;cursor:pointer}
+#eatBtn{position:fixed;right:10px;top:calc(env(safe-area-inset-top,0px) + 100px);color:#fff;background:var(--ui);padding:10px 12px;border-radius:8px;font-size:13px;font-weight:600;touch-action:none;display:none;cursor:pointer}
+#craft,#chest,#trade{position:fixed;inset:0;z-index:7;display:none;padding:16px;overflow:auto;background:rgba(0,0,0,.55);touch-action:pan-y}
+#menuBtn{position:fixed;right:10px;top:calc(env(safe-area-inset-top,0px) + 8px);color:#fff;background:var(--ui);padding:10px 12px;border-radius:8px;font-size:13px;font-weight:600;touch-action:none;cursor:pointer}
+#joy{position:fixed;left:24px;bottom:calc(env(safe-area-inset-bottom,0px) + 80px);width:130px;height:130px;border-radius:50%;background:var(--ui);touch-action:none}
+#knob{position:absolute;left:45px;top:45px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.7)}
+.btns{position:fixed;right:20px;bottom:calc(env(safe-area-inset-bottom,0px) + 80px);display:grid;grid-template-columns:70px 70px;gap:10px;touch-action:none}
+.b{height:62px;border-radius:14px;background:var(--ui);color:var(--fg);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:15px;cursor:pointer}
+.b:active{background:rgba(255,255,255,.35)}
+#hint{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 80px);text-align:center;color:#fff;font-size:12px;opacity:.9;pointer-events:none;text-shadow:0 0 3px #000;animation:fd 1.5s 10s forwards;background:rgba(0,0,0,0.3);padding:4px}
+@keyframes fd{to{opacity:0}}
+#hp{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 64px);color:#ff4d4d;font-size:15px;letter-spacing:1px;text-shadow:0 0 3px #000,0 0 3px #000;pointer-events:none;display:none;white-space:nowrap}
+#dmg{position:fixed;inset:0;background:rgba(220,0,0,.35);opacity:0;pointer-events:none;transition:opacity .3s}
+#dead{position:fixed;inset:0;z-index:8;background:rgba(120,0,0,.6);color:#fff;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;font-size:28px;font-weight:700}
+#dead button{padding:12px 20px;font:700 16px system-ui;border:3px solid #000;background:#7d7d7d;color:#fff;border-radius:4px;cursor:pointer}
+#menu{position:fixed;inset:0;z-index:9;background:linear-gradient(#2b6cb0,#2f7d32 65%,#3b2a14);display:flex;padding:16px;overflow:auto;touch-action:pan-y}
+.card{width:100%;max-width:340px;margin:auto;color:#fff;text-align:center}
+h1{margin:0 0 18px;font-size:30px;text-shadow:3px 3px 0 #000;letter-spacing:1px}
+.mb{display:block;width:100%;margin:8px 0;padding:14px;border:3px solid #000;border-radius:4px;background:#7d7d7d;color:#fff;font:700 16px system-ui;text-shadow:2px 2px 0 #333;box-shadow:inset -3px -3px 0 #555,inset 3px 3px 0 #aaa;cursor:pointer}
+.mb:active{background:#5a8a3a}
+label{display:block;text-align:left;font-size:13px;margin:10px 0 4px}
+input,select{width:100%;box-sizing:border-box;padding:11px;border:3px solid #000;border-radius:4px;background:#222;color:#fff;font-size:16px;user-select:text;-webkit-user-select:text}
+.w{display:flex;gap:6px;align-items:center;margin:6px 0;background:rgba(0,0,0,.4);padding:8px;border-radius:6px;text-align:left}
+.w b{flex:1;overflow:hidden;text-overflow:ellipsis}
+.w button{padding:8px 10px;border:0;border-radius:4px;font-weight:700;cursor:pointer}
+.w button:disabled{opacity:.35;cursor:default}
+</style>
+</head>
+<body>
+<div id="hud">
+<div id="wat" style="position:fixed;inset:0;background:rgba(20,70,190,.35);pointer-events:none;display:none"></div><div id="look"></div><div id="cross"></div><div id="bar"></div><div id="info"></div><div id="menuBtn">☰ Menü</div><div id="craftBtn">⚒ Üret (E)</div><div id="eatBtn">🍖 Ye (Q)</div>
+<div id="joy"><div id="knob"></div></div>
+<div class="btns"><div class="b" id="bBreak">Kır</div><div class="b" id="bPlace">Koy</div><div class="b" id="bJump" style="grid-column:span 2">Zıpla</div><div class="b" id="bDown" style="display:none">Alçal</div></div>
+<div id="hp"></div><div id="dmg"></div><div id="hint"><b>PC:</b> WASD: Yürü | Sol Tık: Kır | Sağ Tık: Koy | Fare Tekerleği/1-9: Seçim | E: Üretim | Q: Ye</div>
+</div>
+<div id="craft"><div class="card" style="background:rgba(0,0,0,.8);padding:14px;border-radius:10px"><h1 style="font-size:22px;margin-bottom:10px">Üretim</h1><div id="rl"></div><button class="mb" id="cx">Kapat (E)</button></div></div>
+<div id="chest"><div class="card" style="background:rgba(0,0,0,.8);padding:14px;border-radius:10px"><h1 style="font-size:22px;margin-bottom:10px">Sandık</h1><div id="cl"></div><button class="mb" id="cc">Kapat (E)</button></div></div>
+<div id="trade"><div class="card" style="background:rgba(0,0,0,.8);padding:14px;border-radius:10px"><h1 style="font-size:22px;margin-bottom:10px">Köylü</h1><div id="tl"></div><button class="mb" id="tc">Kapat (E)</button></div></div>
+<div id="dead">Öldün<button id="resp">Yeniden Doğ</button></div>
+<div id="menu"><div class="card" id="mc"></div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const TYPES=[{n:"Çimen",c:0x5aa83c},{n:"Toprak",c:0x825a32},{n:"Taş",c:0x7d7d7d},{n:"Odun",c:0x96703c},{n:"Kum",c:0xe6d796},{n:"Yaprak",c:0x2f7d32},{n:"Tahta",c:0xb8945a},{n:"Masa",c:0xb08a50},{n:"Fırın",c:0x7d7d7d},{n:"Yatak",c:0xc03030},{n:"Kömür",c:0x222222},{n:"Demir",c:0xd9a066},{n:"Meşale",c:0xffaa33},{n:"Kapı",c:0x9c7a44},{n:"Kapı",c:0x9c7a44},{n:"Kapı",c:0x9c7a44},{n:"Kapı",c:0x9c7a44},{n:"Elmas",c:0x4ff0e8},{n:"Sandık",c:0x8a5a2b},{n:"Cam",c:0xbfe8ff},{n:"Su",c:0x2a6ad8},{n:"-",c:0},{n:"Tohum",c:0x4aa83c},{n:"Fide",c:0x7ac040},{n:"Fide",c:0xb8c04a},{n:"Buğday",c:0xe0bc48}];
+const CS=16,CH=48,TEX=16,SEA=17,CVT=.045,DAY=3600;
+const HBI=[0,1,2,3,4,5,6,7,8,9,12,13,18,19,22],HI=[0,1,2,3,4,5,6,7,8,9,10,11,20,22,23],HN=["Çimen","Toprak","Taş","Odun","Kum","Yaprak","Tahta","Masa","Fırın","Yatak","Meşale","Kapı","Sandık","Cam","Tohum"],PT=[1,2,3,4,5,6,7,8,9,10,13,14,19,20,23];
+let vibOn=(()=>{try{return localStorage.getItem("mm_vib")!=="0"}catch(e){return true}})(),inVil=false,air=10,wOld=false,cvk=1,chests={},spawn=null,sel=0,SEED=1,RD=4,running=false,wname="",tod=.1,broken=0,placed=0,fr=0,holding=false,tgt=null,mods={},MODE=0,hp=20,fly=false,fy=0,regT=0,spT=0,atkT=0,jumpHeld=false,downHeld=false,lastJ=0,dead=false;
+const brk={k:null,t:0},inv=[10,10,10,10,10,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],tools={p:0,s:0,a:0};
